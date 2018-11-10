@@ -66,11 +66,13 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            # return redirect(url_for('index'))
+            return json_response(note='登录成功', status=True)
 
         flash(error)
 
-    return render_template('auth/login.html')
+        return json_response(note='登录失败', status=False)
+
 
 
 @bp.before_app_request
@@ -86,11 +88,11 @@ def load_logged_in_user():
 
 # Logout
 
-@bp.route('/logout')
+@bp.route('/logout',methods=('GET', 'POST'))
 def logout():
     session.clear()
-    return redirect(url_for('index'))
-
+    # return redirect(url_for('index'))
+    return json_response(note='登出成功', status=True)
 
 # Require Authentication in Other Views¶
 
