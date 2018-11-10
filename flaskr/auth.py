@@ -73,8 +73,6 @@ def login():
 
         return json_response(note='登录失败', status=False)
 
-
-
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
@@ -105,3 +103,16 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+# get all users
+
+@bp.route('/getall', methods=('GET', 'POST'))
+def getAllUsers():
+    
+    db = get_db()
+    user = db.execute('SELECT * FROM post').fetchall()
+
+    print(user)
+
+    return json_response(note='获取成功', status=True, items=set(user))
