@@ -7,6 +7,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from flaskr.db import get_db
 
+from flask_json import FlaskJSON, JsonError, json_response, as_json
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 # The First View: Register¶
@@ -34,11 +36,14 @@ def register():
                 (username, generate_password_hash(password))
             )
             db.commit()
-            return redirect(url_for('auth.login'))
+            return json_response(note='注册成功', status=True)
+
+            # return redirect(url_for('auth.login'))
 
         flash(error)
 
-    return render_template('auth/register.html')
+    return json_response(note='注册失败', status=False)
+    # return render_template('auth/register.html')
 
 # Login
 
