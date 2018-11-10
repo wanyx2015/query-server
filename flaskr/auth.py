@@ -111,8 +111,9 @@ def login_required(view):
 def getAllUsers():
     
     db = get_db()
-    user = db.execute('SELECT * FROM post').fetchall()
+    users = db.execute('SELECT username, password FROM user'.format(tn='user', cn='username')).fetchall()
 
-    print(user)
+    for row in users:
+        print(row['username'], row['password'])
 
-    return json_response(note='获取成功', status=True, items=set(user))
+    return json_response(note='获取成功', status=True, users=set(users))
