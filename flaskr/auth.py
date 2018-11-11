@@ -32,8 +32,8 @@ def register():
 
         if error is None:
             db.execute(
-                'INSERT INTO user (username, password) VALUES (?, ?)',
-                (username, generate_password_hash(password))
+                'INSERT INTO user (username, password, count) VALUES (?, ?, ?)',
+                (username, generate_password_hash(password), 50)
             )
             db.commit()
             return json_response(note='注册成功', status=True)
