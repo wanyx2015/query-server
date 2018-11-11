@@ -110,10 +110,14 @@ def login_required(view):
 @bp.route('/getall', methods=('GET', 'POST'))
 def getAllUsers():
     
+    data = []
     db = get_db()
-    users = db.execute('SELECT username, password FROM user'.format(tn='user', cn='username')).fetchall()
+    users = db.execute('SELECT id, username, password FROM user'.format(tn='user', cn='username')).fetchall()
 
     for row in users:
-        print(row['username'], row['password'])
+        print(row['id'], row['username'], row['password'])
+        data.append({'id': row['id'], 'username': row['username'], 'password': row['password']})
 
-    return json_response(note='获取成功', status=True, users=set(users))
+    print(data)
+    
+    return json_response(note='获取成功', status=True, users=iter(data))
