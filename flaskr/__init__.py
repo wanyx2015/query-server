@@ -11,6 +11,7 @@ def create_app(test_config=None):
     FlaskJSON(app)
 
     # app.config['JSON_AS_ASCII'] = False
+    app.config['SECRET_KEY'] = 'thisisasecretkey'
 
     app.config.from_mapping(
         SECRET_KEY='dev',
