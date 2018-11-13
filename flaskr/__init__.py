@@ -10,6 +10,8 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     FlaskJSON(app)
 
+    # app.config['JSON_AS_ASCII'] = False
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
@@ -38,5 +40,9 @@ def create_app(test_config=None):
 
     from . import auth
     app.register_blueprint(auth.bp)
+
+    from . import query
+    app.register_blueprint(query.bp)
+    app.add_url_rule('/', endpoint='index')
 
     return app

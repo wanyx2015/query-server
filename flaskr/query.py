@@ -11,19 +11,6 @@ import requests
 
 bp = Blueprint('query', __name__, url_prefix='/query')
 
-
-@bp.route('/')
-def index():
-    db = get_db()
-    posts = db.execute(
-        'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' ORDER BY created DESC'
-    ).fetchall()
-    return render_template('blog/index.html', posts=posts)
-
-
-
 @bp.route('/type1', methods=('GET', 'POST'))
 @login_required
 def type1():
@@ -37,6 +24,7 @@ def type1():
         # error = None
 
     url = 'http://211.148.18.173/communication/personal/2016'
+    url = 'http://www.webvep.com'
 
     payload={'name': name, 'idcard': idcard, 'mobile': mobile, 'key': '4ae987b67739157051abca0e9b2ba8dd'}
     print(g.user['id'])
