@@ -113,6 +113,19 @@ def type1():
 
 
 
+@bp.route('/getcount', methods=('GET', 'POST'))
+@timethis
+@token_required
+def getcount():
+    db = get_db()
+    user = db.execute('select username, count from user where id = ?', (g.user['id'],)).fetchone()
+
+    print(user['username'], user['count'])
+    return json_response(note='查询成功', status=True,  count=user['count'], user=user['username'])
+
+    # return json_response(note='查询失败', status=False)
+    
+
 @bp.route('/unprotected', methods=('GET', 'POST'))
 @timethis
 def unprotected():
