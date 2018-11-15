@@ -24,18 +24,38 @@ def token_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         
-        token = request.args.get('token')
+        # print(request.headers)
+        # print(request.__dict__)
+        print(request.form)
+        for r in request.form:
+            print(r, request.form[r])
+
+        # token = request.args.get('access_token')
         token = request.form['token']
 
+        print('token is', token)
         
         if not token:
+            print("token is missing")
             # return jsonify({'message': 'token is missing'}) 403
             return json_response(status_=403, headers_={'message': 'token is missing'})
 
         
         try:
             data = jwt.decode(token, current_app.config['SECRET_KEY'])
+            print(data)
+            print(data['user'])
+
+            userid = data['userid']
+            g.user = get_db().execute('SELECT * FROM user WHERE id = ?', (userid,)).fetchone()
+        
+            # if user_id is None:
+            #     g.user = None
+            # else:
+            #     g.user = get_db().execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
+
         except:
+            print("token is invalid")
             # return jsonify({'message': 'token is invalid'}) 403
             return json_response(status_=403, headers_={'message': 'token is invalid'})
 
@@ -50,6 +70,7 @@ bp = Blueprint('query', __name__, url_prefix='/query')
 @timethis
 @token_required
 def type1():
+    
     if request.method == 'POST':
         name = '黄默'
         idcard = '340103198511030017'
@@ -60,10 +81,10 @@ def type1():
         # error = None
 
     url = 'http://211.148.18.173/communication/personal/2016'
-    url = 'http://www.webvep.com'
+    # url = 'http://www.webvep.com'
 
     payload={'name': name, 'idcard': idcard, 'mobile': mobile, 'key': '4ae987b67739157051abca0e9b2ba8dd'}
-    print(g.user['id'])
+    # print(g.user['id'])
     r = requests.post(url, data=payload)
     # return requests.post(url, data=payload).content
 
@@ -77,9 +98,14 @@ def type1():
         user = db.execute('select username, count from user where id = ?', (g.user['id'],)).fetchone()
 
         print(user['username'], user['count'])
+        content = jsonify(r.content)
+        print(content)
 
+        # return json_response(note='查询成功', status=True,  count=user['count'], data=r.content)
         return json_response(note='查询成功', status=True,  count=user['count'], data=str(r.content, encoding = "utf-8"))
         # return r.content
+    # return r.content
+    # return json_response(note='查询成功', status=True,   data=str(r.content, encoding = "utf-8"))
 
     return json_response(note='查询失败', status=False)
     

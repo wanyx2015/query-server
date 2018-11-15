@@ -1,7 +1,7 @@
 import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, current_app
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -9,7 +9,21 @@ from flaskr.db import get_db
 
 from flask_json import FlaskJSON, JsonError, json_response, as_json
 
+import requests, jwt, datetime, time
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+
+def timethis(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(func.__name__, end-start)
+        return result
+    return wrapper
+
 
 # The First View: Register¶
 
@@ -49,6 +63,10 @@ def register():
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    print(request.headers)
+    print(request.__dict__)
+    for row in request.__dict__:
+        print(row)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -58,20 +76,31 @@ def login():
             'SELECT * FROM user WHERE username = ?', (username,)
         ).fetchone()
 
+        print("userid", user['id'], 'username', user['username'])
+
         if user is None:
             error = 'Incorrect username.'
         elif not check_password_hash(user['password'], password):
             error = 'Incorrect password.'
 
         if error is None:
+
+            token = jwt.encode({'user': username, 'userid': user['id'], 'count': user['count'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes = 5)}, current_app.config['SECRET_KEY'])
+
             session.clear()
-            session['user_id'] = user['id']
+            # session['user_id'] = user['id']
+            session['token'] = token
+
+            return jsonify({'token': token.decode('UTF-8')})
+
+
             # return redirect(url_for('index'))
-            return json_response(note='登录成功', status=True)
+            # return json_response(note='登录成功', status=True)
 
         flash(error)
 
-        return json_response(note='登录失败', status=False)
+        return json_response(status_=401, headers_={'WWW-Authorization': 'Basic realm="Login Required"'}, note='登录失败', status=False)
+        # return json_response(note='登录失败', status=False)
 
 @bp.before_app_request
 def load_logged_in_user():
