@@ -88,7 +88,7 @@ def login():
 
             print("userid", user['id'], 'username', user['username'])
 
-            token = jwt.encode({'user': username, 'userid': user['id'], 'count': user['count'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes = 5)}, current_app.config['SECRET_KEY'])
+            token = jwt.encode({'user': username, 'userid': user['id'], 'count': user['count'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes = 60*24*30)}, current_app.config['SECRET_KEY'])
 
             session.clear()
             # session['user_id'] = user['id']
