@@ -7,8 +7,32 @@ from flaskr.auth import login_required
 from flaskr.db import get_db
 from flask_json import FlaskJSON, JsonError, json_response, as_json
 
-import requests, jwt, datetime, time
+import requests, jwt, datetime, time, json
+
 from functools import wraps
+from Crypto.Hash import SHA256
+from binascii import b2a_hex, a2b_hex
+
+
+url = 'https://crp.chinadep.com/api/p/crp/'
+memId = '0000109'
+jobId = 'JON20181116000000291'
+serialNo = '1201611161916567677531846'
+appKey = '02DF41BAAB249FB5F42BB6DB7FFE4A3377AFFDA59C849506EEDA52351E65B0F345'
+hash_str = str.encode(memId + serialNo + jobId + appKey)
+hash_inst = SHA256.new(hash_str)
+digest = hash_inst.digest()
+digest_str = b2a_hex(digest)
+
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (bytes, bytearray)):
+            return obj.decode("ASCII") # <- or any other encoding of your choice
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
+
 
 def timethis(func):
     @wraps(func)
@@ -72,12 +96,12 @@ bp = Blueprint('query', __name__, url_prefix='/query')
 def type1():
     
     if request.method == 'POST':
-        name = '黄默'
-        idcard = '340103198511030017'
-        mobile = '15209844817'
-        # name = request.form['name']
-        # idcard = request.form['idcard']
-        # mobile = request.form['mobile']
+        # name = '黄默'
+        # idcard = '340103198511030017'
+        # mobile = '15209844817'
+        name = request.form['name']
+        idcard = request.form['idcard']
+        mobile = request.form['mobile']
         # error = None
 
     url = 'http://211.148.18.173/communication/personal/2016'
@@ -155,3 +179,101 @@ def login():
     return json_response(status_=401, headers_={'WWW-Authorization': 'Basic realm="Login Required"'})
 
 
+
+
+
+@bp.route('/type2001001', methods=('GET', 'POST'))
+@timethis
+@token_required
+def type2001001():
+    
+    if request.method == 'POST':
+        fullName = request.form['name']
+        identityNumber = request.form['idcard']
+        # mobile = request.form['mobile']
+        # error = None
+        data = {
+                'pubReqInfo': {'memId': memId,
+                            'serialNo': serialNo,
+                            'jobId': 'JON20161005000000076',
+                            'timeStamp': str(int(time.time())),
+                            'authMode': '00',
+                            'reqSign': digest_str},
+                'busiInfo': {"identityNumber":identityNumber, "name":fullName},
+            }
+
+        jsonified = json.dumps(data, cls=MyEncoder)
+        print('jsonified', jsonified)
+        print(10*'*' + '\n' )
+        r = requests.post(url, json.dumps(data, cls=MyEncoder))
+        print(r.content)
+  
+
+        if r.status_code == 200:
+            db = get_db()
+            db.execute('UPDATE user set count = count -1 where id = ?', (g.user['id'],))
+            db.commit()
+            user = db.execute('select username, count from user where id = ?', (g.user['id'],)).fetchone()
+
+            print(user['username'], user['count'])
+            content = jsonify(r.content)
+            print(content)
+
+            # return json_response(note='查询成功', status=True,  count=user['count'], data=r.content)
+            return json_response(note='查询成功', status=True,  count=user['count'], data=str(r.content, encoding = "utf-8"))
+            # return r.content
+
+
+        return json_response(note='查询成功', status=True,  count=user['count'], data=str(r.content, encoding = "utf-8"))
+
+    return json_response(note='查询失败', status=False)
+    
+
+
+
+@bp.route('/type3001001', methods=('GET', 'POST'))
+@timethis
+@token_required
+def type3001001():
+    
+    if request.method == 'POST':
+        fullName = request.form['name']
+        identityNumber = request.form['idcard']
+        # mobile = request.form['mobile']
+        # error = None
+        data = {
+                'pubReqInfo': {'memId': memId,
+                            'serialNo': serialNo,
+                            'jobId': 'JON20161005000000076',
+                            'timeStamp': str(int(time.time())),
+                            'authMode': '00',
+                            'reqSign': digest_str},
+                'busiInfo': {"identityNumber":identityNumber, "name":fullName},
+            }
+
+        jsonified = json.dumps(data, cls=MyEncoder)
+        print('jsonified', jsonified)
+        print(10*'*' + '\n' )
+        r = requests.post(url, json.dumps(data, cls=MyEncoder))
+        print(r.content)
+  
+
+        if r.status_code == 200:
+            db = get_db()
+            db.execute('UPDATE user set count = count -1 where id = ?', (g.user['id'],))
+            db.commit()
+            user = db.execute('select username, count from user where id = ?', (g.user['id'],)).fetchone()
+
+            print(user['username'], user['count'])
+            content = jsonify(r.content)
+            print(content)
+
+            # return json_response(note='查询成功', status=True,  count=user['count'], data=r.content)
+            return json_response(note='查询成功', status=True,  count=user['count'], data=str(r.content, encoding = "utf-8"))
+            # return r.content
+
+
+        return json_response(note='查询成功', status=True,  count=user['count'], data=str(r.content, encoding = "utf-8"))
+
+    return json_response(note='查询失败', status=False)
+    
