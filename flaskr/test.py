@@ -21,16 +21,11 @@ if __name__ == '__main__':
     serialNo = '1201611161916567677531846'
     appKey = '02DF41BAAB249FB5F42BB6DB7FFE4A3377AFFDA59C849506EEDA52351E65B0F345'
     hash_str = str.encode(memId + serialNo + jobId + appKey)
-    # print(hash_str)
-    # print(SHA256.new(hash_str)
     hash_inst = SHA256.new(hash_str)
-    # hash_inst.update(hash_str)
-    # print(hash_str)
 
     digest = hash_inst.digest()
-    print(digest)
-
     digest_str = b2a_hex(digest)
+    print(digest)
     print(digest_str)
     data = {
         'pubReqInfo': {'memId': memId,
@@ -42,14 +37,8 @@ if __name__ == '__main__':
         'busiInfo': {"identityNumber":"340103198511030017", "name":"黄默"},
     }
 
-
-    jsonified = json.dumps( data, cls=MyEncoder )
+    jsonified = json.dumps(data, cls=MyEncoder)
     print('jsonified', jsonified)
-
-    # print('data', data)
-    # print('data dump', json.dumps(str(data, encoding='utf-8')))
-
     print(10*'*' + '\n' )
     print(requests.post(url, json.dumps(data, cls=MyEncoder)).content)
-    # print (requests.post(url, (data)).content)
 
