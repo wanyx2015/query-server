@@ -70,13 +70,14 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        print("received username", username)
+        print("received password", password)
         db = get_db()
         error = None
         user = db.execute(
             'SELECT * FROM user WHERE username = ?', (username,)
         ).fetchone()
 
-        print("userid", user['id'], 'username', user['username'])
 
         if user is None:
             error = 'Incorrect username.'
@@ -84,6 +85,8 @@ def login():
             error = 'Incorrect password.'
 
         if error is None:
+
+            print("userid", user['id'], 'username', user['username'])
 
             token = jwt.encode({'user': username, 'userid': user['id'], 'count': user['count'], 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes = 5)}, current_app.config['SECRET_KEY'])
 
